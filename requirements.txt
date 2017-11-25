@@ -1,0 +1,6 @@
+alog
+future
+pyee
+requests
+semver
+websocket-client
