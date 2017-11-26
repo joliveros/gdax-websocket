@@ -1,18 +1,18 @@
-bitmex-websocket
+gdax-websocket
 ================
-.. image:: https://api.travis-ci.org/joliveros/bitmex-websocket.svg?branch=master
-    :target: https://travis-ci.org/joliveros/bitmex-websocket
-.. image:: https://requires.io/github/joliveros/bitmex-websocket/requirements.svg?branch=master
-    :target: https://requires.io/github/joliveros/bitmex-websocket/requirements?branch=master
-.. image:: https://coveralls.io/repos/joliveros/bitmex-websocket/badge.svg?branch=master
-    :target: https://coveralls.io/r/joliveros/bitmex-websocket?branch=master
+.. image:: https://api.travis-ci.org/joliveros/gdax-websocket.svg?branch=master
+    :target: https://travis-ci.org/joliveros/gdax-websocket
+.. image:: https://requires.io/github/joliveros/gdax-websocket/requirements.svg?branch=master
+    :target: https://requires.io/github/joliveros/gdax-websocket/requirements?branch=master
+.. image:: https://coveralls.io/repos/joliveros/gdax-websocket/badge.svg?branch=master
+    :target: https://coveralls.io/r/joliveros/gdax-websocket?branch=master
 
 Install
 -------
 
 .. code-block:: sh
 
-    $ pip install bitmex-websocket
+    $ pip install gdax-websocket
 
 Usage
 -----

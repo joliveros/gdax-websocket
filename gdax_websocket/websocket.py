@@ -13,37 +13,27 @@ import ssl
 import threading
 import time
 import traceback
-import websocket
+from websocket import WebsocketApp
 
 PING_MESSAGE_PREFIX = 'primus::ping::'
 CONN_TIMEOUT = 15
 MAX_RECONNECT = 2
 
-__all__ = ['GdaxWebsocket']
 
-
-class GdaxWebsocket(EventEmitter):
-    def __init__(self):
+class GdaxWebsocket(EventEmitter, WebsocketApp):
+    def __init__(self,
+                 shouldAuth=False,
+                 heartbeatEnabled=True):
         EventEmitter.__init__(self)
+        self.url = self.build_websocket_url()
+        self.header = self.get_auth()
+        self.sock = None
+        self.last_ping_tm = 0
+        self.last_pong_tm = 0
         self.channels = []
         self.reconnect_count = 0
         self.__reset()
-
-    def connect(
-            self,
-            shouldAuth=False,
-            websocket=None,
-            heartbeatEnabled=True):
-        '''Connect to the websocket and initialize data stores.'''
-
-        alog.debug("Connecting WebSocket.")
-        self.shouldAuth = shouldAuth
-        alog.debug('heartbeatEnabled: %s' % heartbeatEnabled)
-        self.heartbeatEnabled = heartbeatEnabled
         self.connect_websocket()
-
-        alog.info('Connected to WS. Waiting for data images, this may \
-        take a moment...')
 
     def re_connect(self):
         alog.debug('## attempt reconnect: %s' % self.reconnect_count)
@@ -73,8 +63,6 @@ class GdaxWebsocket(EventEmitter):
     def connect_websocket(self):
         """Connect to the websocket in a thread."""
         alog.debug("### Connecting Websocket ###")
-
-        self.init_websocket()
 
         # setup websocket.run_forever arguments
         wsRunArgs = {
@@ -109,26 +97,11 @@ class GdaxWebsocket(EventEmitter):
 
         self.reconnect_count = 0
 
-    def init_websocket(self):
-        wsURL = self.build_websocket_url()
-        alog.debug("Connecting to %s" % (wsURL))
-        self.ws = websocket.WebSocketApp(wsURL,
-                                         on_message=self.__on_message,
-                                         on_close=self.__on_close,
-                                         on_open=self.__on_open,
-                                         on_error=self.__on_error,
-                                         header=self.__get_auth(),
-                                         on_ping=self.__on_ping,
-                                         on_pong=self.__on_pong)
-
-    def websocket_run_forever(self, args):
-        self.ws.run_forever(**args)
-
-    def __on_ping(self, frame, data):
+    def on_ping(self, frame, data):
         alog.debug('## ping')
         alog.debug(data)
 
-    def __on_pong(self, frame, data):
+    def on_pong(self, frame, data):
         alog.debug('## pong')
         alog.debug(data)
 
@@ -245,7 +218,7 @@ class GdaxWebsocket(EventEmitter):
     #
     # Private methods
     #
-    def __get_auth(self):
+    def get_auth(self):
         '''Return auth headers. Will use API Keys if present in settings.'''
         alog.debug('shouldAuth: %s' % self.shouldAuth)
         if self.shouldAuth:
@@ -268,38 +241,38 @@ class GdaxWebsocket(EventEmitter):
         else:
             return []
 
-    def __wait_for_account(self):
+    def wait_for_account(self):
         '''On subscribe, this data will come down. Wait for it.'''
         # Wait for the keys to show up from the ws
         while not {'margin', 'position', 'order'} <= set(self.data):
             sleep(0.1)
 
-    def __wait_for_symbol(self, symbol):
+    def wait_for_symbol(self, symbol):
         '''On subscribe, this data will come down. Wait for it.'''
         while not {'instrument', 'trade', 'quote'} <= set(self.data):
             sleep(0.1)
 
-    def __send_command(self, command, args=[]):
+    def send_command(self, command, args=[]):
         '''Send a raw command.'''
         self.ws.send(json.dumps({"op": command, "args": args}))
 
-    def __on_open(self, ws):
+    def on_open(self, ws):
         alog.debug("Websocket Opened.")
 
-    def __on_close(self, ws):
+    def on_close(self, ws):
         alog.info('Websocket Closed')
         self.emit('close')
         self.exit()
         self.re_connect()
 
-    def __on_error(self, ws, error):
+    def on_error(self, ws, error):
         if not self.exited:
             self.emit('error', error)
             self.error(error)
             self.exit()
             self.re_connect()
 
-    def __reset(self):
+    def reset(self):
         self.remove_all_listeners()
         self.on('subscribe', self.on_subscribe)
         self.on('ping', self.on_ping)

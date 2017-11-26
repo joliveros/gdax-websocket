@@ -1,6 +1,6 @@
-FROM codequants/bitmex-websocket:base
+FROM codequants/gdax-websocket:base
 
-ENV MODULE_NAME bitmex-websocket
+ENV MODULE_NAME gdax-websocket
 
 COPY . /src
 

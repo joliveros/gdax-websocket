@@ -37,20 +37,12 @@ class Instrument(EventEmitter):
             'instrument': []
         }
 
-        self.init()
-
-    def init(self, reset=False):
-        alog.debug("## init")
         channels = self.channels
         symbol = self.symbol
         shouldAuth = self.shouldAuth
         websocket = self.websocket
 
-        if reset:
-            websocket = self.websocket = GdaxWebsocket()
-
-        if not websocket:
-            self.websocket = GdaxWebsocket()
+        self.websocket = GdaxWebsocket()
 
         self.websocket.connect(
            shouldAuth=shouldAuth,
